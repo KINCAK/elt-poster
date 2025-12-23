@@ -1,348 +1,160 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  BookOpen, 
-  CheckCircle, 
-  RefreshCw, 
-  Target, 
-  Users, 
-  MessageSquare, 
-  Zap, 
-  FileText,
-  Star,
-  Info,
-  Sparkles,
-  Loader2,
-  ChevronRight,
-  BrainCircuit
-} from 'lucide-react';
+import React, { useState } from 'react';
 
 const App = () => {
-  const [activeSection, setActiveSection] = useState(null);
-  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
-  const [aiSummary, setAiSummary] = useState('');
-  const [testSpecPrompt, setTestSpecPrompt] = useState({ skill: 'Writing', level: 'Intermediate' });
-  const [isDraftingSpec, setIsDraftingSpec] = useState(false);
-  const [specResult, setSpecResult] = useState('');
+  const [skill, setSkill] = useState('Writing');
+  const [generatedDraft, setGeneratedDraft] = useState(null);
 
-  // API Key is empty for production safety; provided by environment at runtime or via .env
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY; 
+  // Links to your actual assignments in the 'public' folder
+  const files = {
+    grammar: "/VocabngrammarZEYNEPKINCAK.docx",
+    reading: "/KINCAKREADINGTEST (1).docx",
+    speaking: "/speaking test elt403.docx"
+  };
 
   const sections = [
-    {
-      id: 'foundation',
-      title: '1. The Foundation',
-      icon: <BookOpen className="w-6 h-6" />,
-      color: 'bg-blue-500',
-      content: 'Assessment vs. Testing',
-      details: [
-        'Testing: Formal, standardized snapshots (TOEFL, IELTS).',
-        'Assessment: The broad umbrella including classroom tasks.',
-        'Summative (AoL): Measuring achievement at the end.',
-        'Formative (AfL): Ongoing support to guide future learning.'
-      ]
+    { 
+      id: 1, 
+      title: "1. The Foundation", 
+      sub: "Assessment vs. Testing", 
+      icon: "📖", 
+      text: "Testing is just a snapshot, but assessment is the journey. Our SAT analysis showed us that multiple-choice questions often only check if we recognize language traits, not if we can actually use them to communicate.",
+      file: files.grammar
     },
-    {
-      id: 'pillars',
-      title: '2. The Pillars',
-      icon: <Target className="w-6 h-6" />,
-      color: 'bg-green-500',
-      content: 'Validity & Reliability',
-      details: [
-        'Validity: Does it measure what it claims to? (Content, Construct, Face).',
-        'Reliability: Is it consistent? (Scoring, administration, test-taker performance).',
-        'Rule: If a test is not reliable, it cannot be valid!'
-      ]
+    { 
+      id: 2, 
+      title: "2. The Pillars", 
+      sub: "Validity & Reliability", 
+      icon: "⚖️", 
+      text: "In our speaking test design, we learned that using two examiners—a silent assessor and an interlocutor—is a critical reliability strategy to keep the scoring objective and fair for every student.",
+      file: files.speaking
     },
-    {
-      id: 'feedback',
-      title: '3. The Heart: Feedback',
-      icon: <MessageSquare className="w-6 h-6" />,
-      color: 'bg-purple-500',
-      content: 'The 3 Fs & 5 Cs',
-      details: [
-        'Feed Up: Where am I going? (Goals).',
-        'Feedback: How am I doing? (Current performance).',
-        'Feed Forward: Where to next? (Actionable steps).',
-        'The 5 Cs: Clarity, Coherence, Collaboration, Communication, Care.'
-      ]
+    { 
+      id: 3, 
+      title: "3. The Heart", 
+      sub: "Feedback & Interaction", 
+      icon: "💬", 
+      text: "Interaction is key. we chose a paired administration format for our speaking test because it allows for a more authentic assessment of interactional skills compared to a standard one-on-one interview.",
+      file: files.speaking
     },
-    {
-      id: 'washback',
-      title: '4. The Impact',
-      icon: <RefreshCw className="w-6 h-6" />,
-      color: 'bg-orange-500',
-      content: 'Washback Effect',
-      details: [
-        'Positive Washback: Motivates meaningful practice (e.g., project-based assessment).',
-        'Negative Washback: Teaching to the test, narrowing the curriculum to MCQs.'
-      ]
+    { 
+      id: 4, 
+      title: "4. The Impact", 
+      sub: "The Backwash Effect", 
+      icon: "🔄", 
+      text: "The Backwash Effect is huge. If we only test recognition, students might focus on rote memorization. We need tasks that push them to actually produce language in real-world contexts.",
+      file: files.grammar
     },
-    {
-      id: 'specs',
-      title: '5. The Blueprint',
-      icon: <FileText className="w-6 h-6" />,
-      color: 'bg-red-500',
-      content: 'Test Specifications',
-      details: [
-        'Purpose, Format, Content, Timing.',
-        'Scoring criteria (Rubrics/Keys).',
-        'Reliability & Validity considerations.',
-        'Item selection & Difficulty level.'
-      ]
+    { 
+      id: 5, 
+      title: "5. The Blueprint", 
+      sub: "Test Specifications", 
+      icon: "📝", 
+      text: "Developing 'The Architecture of Joy' reading test taught us to target specific sub-skills like skimming for main ideas and careful reading for detail to ensure high construct validity.",
+      file: files.reading
     },
-    {
-      id: 'yl',
-      title: '6. Young Learners',
-      icon: <Users className="w-6 h-6" />,
-      color: 'bg-teal-500',
-      content: 'Assessing Kids',
-      details: [
-        'Concrete & Meaningful: Use visuals and movement.',
-        'Low Stress: Minimize anxiety, focus on progress not ranking.',
-        'Variety: Short tasks due to limited attention spans.',
-        'Feedback: Use symbols, stickers, and encouraging words.'
-      ]
+    { 
+      id: 6, 
+      title: "6. Young Learners", 
+      sub: "Functional Assessment", 
+      icon: "🎨", 
+      text: "For younger learners, it's about what they CAN do. We believe adding timed write-ups or short fill-in-the-blanks helps align our tests with how we actually use language in modern life.",
+      file: files.grammar
     }
   ];
 
-  const callGemini = async (prompt, systemInstruction) => {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-    const payload = {
-      contents: [{ parts: [{ text: prompt }] }],
-      systemInstruction: { parts: [{ text: systemInstruction }] }
-    };
-
-    let delay = 1000;
-    for (let i = 0; i < 5; i++) {
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text;
-      } catch (error) {
-        if (i === 4) throw error;
-        await new Promise(resolve => setTimeout(resolve, delay));
-        delay *= 2;
-      }
-    }
-  };
-
-  const generateSummary = async () => {
-    setIsGeneratingSummary(true);
-    try {
-      const contentString = sections.map(s => `${s.title}: ${s.content} - ${s.details.join(', ')}`).join('\n');
-      const result = await callGemini(
-        `Summarize these ELT assessment key concepts into a 3-sentence study guide: ${contentString}`,
-        "You are an expert ELT Professor helping a student review for an exam."
-      );
-      setAiSummary(result);
-    } catch (error) {
-      setAiSummary("Oops! I couldn't generate a summary right now. Please try again later.");
-    } finally {
-      setIsGeneratingSummary(false);
-    }
-  };
-
-  const draftTestSpec = async () => {
-    setIsDraftingSpec(true);
-    try {
-      const prompt = `Draft a brief test specification for a ${testSpecPrompt.skill} test for ${testSpecPrompt.level} learners. Include Purpose, Format, and one Reliability tip.`;
-      const result = await callGemini(
-        prompt,
-        "You are an expert in Language Assessment specializing in writing Test Specifications."
-      );
-      setSpecResult(result);
-    } catch (error) {
-      setSpecResult("Error drafting specification. Please check your connection.");
-    } finally {
-      setIsDraftingSpec(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
-      {/* Header */}
-      <header className="max-w-6xl mx-auto text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight">
-          ELT 403: <span className="text-blue-600">Assessment & Evaluation</span>
-        </h1>
-        <p className="text-xl text-slate-600 font-medium">
-          A Visual Poster for ELT 403, 22.12.2025
-        </p>
-      </header>
-
-      {/* Gemini Powered Summary Button */}
-      <div className="max-w-6xl mx-auto mb-10 flex flex-col items-center">
-        <button 
-          onClick={generateSummary}
-          disabled={isGeneratingSummary}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 disabled:opacity-50"
-        >
-          {isGeneratingSummary ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-          ✨ Quick AI Study Summary
-        </button>
-        {aiSummary && (
-          <div className="mt-4 bg-white border-l-4 border-blue-500 p-4 rounded-xl shadow-md max-w-2xl animate-in fade-in slide-in-from-top-2">
-            <p className="text-slate-700 text-sm italic">"{aiSummary}"</p>
-          </div>
-        )}
+    <div className="world-container">
+      {/* GLOWING BACKGROUND ELEMENTS */}
+      <div className="fixed inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-20 left-1/4 w-64 h-64 bg-blue-500 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-40 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[150px]"></div>
       </div>
 
-      {/* Main Poster Grid */}
-      <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sections.map((section) => (
-          <div 
-            key={section.id}
-            className={`relative overflow-hidden rounded-3xl transition-all duration-300 transform cursor-pointer
-              ${activeSection === section.id ? 'scale-105 shadow-2xl ring-4 ring-offset-2 ring-slate-200' : 'shadow-lg hover:shadow-xl hover:-translate-y-1'}
-              bg-white border border-slate-100 p-6`}
-            onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
-          >
-            <div className={`${section.color} w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg`}>
-              {section.icon}
+      {/* THE PLAYER (YOU, ZEYNEP) */}
+      <div className="player-character">
+        <div className="flex flex-col items-center">
+          <div className="text-7xl drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]">👩‍🎓</div>
+          <div className="mt-4 bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-lg border border-blue-400">
+            Zeynep Kınçak
+          </div>
+        </div>
+      </div>
+
+      {/* HORIZONTAL STORY PATH */}
+      <div className="flex items-center h-full">
+        {sections.map((s) => (
+          <section key={s.id} className="storybox w-[100vw] h-full flex items-center justify-center shrink-0 px-8">
+            <div className="storybox-card bg-white/10 backdrop-blur-md p-10 rounded-[50px] border border-white/20 shadow-2xl max-w-xl text-center">
+              <span className="text-6xl mb-6 block drop-shadow-md">{s.icon}</span>
+              <h2 className="text-4xl font-bold text-white mb-2 font-serif">{s.title}</h2>
+              <p className="text-blue-400 font-bold text-sm uppercase tracking-widest mb-6">{s.sub}</p>
+              <p className="text-slate-200 text-lg italic leading-relaxed mb-8">"{s.text}"</p>
+              
+              <a 
+                href={s.file} 
+                download 
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full font-bold text-sm transition-all transform active:scale-95 shadow-lg shadow-blue-500/20"
+              >
+                📂 Open Project File
+              </a>
             </div>
-            <h2 className="text-xl font-bold text-slate-800 mb-1">{section.title}</h2>
-            <p className="text-blue-600 font-semibold mb-3">{section.content}</p>
+          </section>
+        ))}
+
+        {/* TEST DESIGN TERMINAL */}
+        <section className="storybox w-[150vw] h-full flex items-center justify-center shrink-0 px-8">
+          <div className="storybox-card bg-slate-900/80 backdrop-blur-xl p-12 rounded-[60px] border-2 border-blue-500/50 shadow-2xl max-w-3xl w-full text-white">
+            <h2 className="text-4xl font-bold mb-4 font-serif text-blue-400">Test Design Terminal</h2>
+            <p className="text-slate-400 mb-8 text-lg">Input your parameters to finalize your draft.</p>
             
-            <div className={`space-y-2 transition-all duration-500 ${activeSection === section.id ? 'opacity-100 max-h-96 mt-4' : 'opacity-60 max-h-20 overflow-hidden'}`}>
-              {section.details.map((detail, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <div className="mt-1.5 min-w-[6px] h-[6px] rounded-full bg-slate-300" />
-                  <p className="text-slate-600 text-sm leading-relaxed">{detail}</p>
-                </div>
-              ))}
+            <div className="flex flex-col md:flex-row gap-4 mb-10">
+              <select 
+                value={skill} 
+                onChange={(e) => setSkill(e.target.value)}
+                className="bg-slate-800 border border-slate-700 rounded-2xl px-6 py-4 flex-grow text-lg outline-none focus:ring-2 focus:ring-blue-500 text-white"
+              >
+                <option value="Writing">Skill: Writing (SAT Critique)</option>
+                <option value="Reading">Skill: Reading (Architecture of Joy)</option>
+                <option value="Speaking">Skill: Speaking (B2 Paired Test)</option>
+              </select>
+              <button 
+                onClick={() => setGeneratedDraft(skill)}
+                className="bg-blue-600 hover:bg-blue-500 px-10 py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95"
+              >
+                View Summary
+              </button>
             </div>
 
-            {activeSection !== section.id && (
-              <div className="mt-4 flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <Info className="w-3 h-3 mr-1" /> Tap to expand
+            {generatedDraft && (
+              <div className="bg-blue-900/30 p-8 rounded-3xl border border-blue-500/30 text-left">
+                <p className="text-blue-200 font-mono text-xl mb-4 uppercase font-bold tracking-widest">System Output:</p>
+                <div className="text-slate-300 space-y-2 text-sm">
+                  {generatedDraft === 'Writing' && (
+                    <p>Focuses on transitioning from recognition to production to avoid negative backwash. Prioritizes timed write-ups over simple multiple-choice.</p>
+                  )}
+                  {generatedDraft === 'Reading' && (
+                    <p>B2/C1 target using 'The Architecture of Joy.' Tests skimming for main ideas and careful reading for explicit facts and inferences.</p>
+                  )}
+                  {generatedDraft === 'Speaking' && (
+                    <p>Paired administration format for authentic interaction. Employs analytical rubrics for grammar, discourse, and pronunciation.</p>
+                  )}
+                </div>
               </div>
             )}
           </div>
-        ))}
-      </main>
+        </section>
 
-      {/* AI Test Spec Draftsman Tool */}
-      <section className="max-w-6xl mx-auto mt-12 bg-slate-900 rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <BrainCircuit className="w-48 h-48" />
-        </div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="text-blue-400 w-8 h-8" />
-            <h2 className="text-3xl font-bold">✨ Test Spec Draftsman</h2>
+        {/* FINAL CREDITS */}
+        <section className="w-[100vw] h-full flex items-center justify-center shrink-0">
+          <div className="text-center">
+            <h2 className="text-6xl font-serif text-white mb-4">The End.</h2>
+            <div className="h-1 w-24 bg-blue-600 mx-auto mb-8"></div>
+            <p className="text-blue-400 font-bold tracking-[0.3em] uppercase">Made by Zeynep Kınçak</p>
           </div>
-          <p className="text-slate-400 mb-8 max-w-xl">
-            Struggling with the Week 5 task? Select a skill and level, and Gemini will help you draft the initial specifications for your test design.
-          </p>
+        </section>
+      </div>
 
-          <div className="grid md:grid-cols-3 gap-6 items-end">
-            <div>
-              <label className="block text-sm font-semibold text-slate-400 mb-2">Skill</label>
-              <select 
-                value={testSpecPrompt.skill}
-                onChange={(e) => setTestSpecPrompt({...testSpecPrompt, skill: e.target.value})}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                <option>Reading</option>
-                <option>Writing</option>
-                <option>Listening</option>
-                <option>Speaking</option>
-                <option>Grammar</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-400 mb-2">Learner Level</label>
-              <select 
-                value={testSpecPrompt.level}
-                onChange={(e) => setTestSpecPrompt({...testSpecPrompt, level: e.target.value})}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                <option>Beginner (A1-A2)</option>
-                <option>Intermediate (B1-B2)</option>
-                <option>Advanced (C1-C2)</option>
-                <option>Young Learners</option>
-              </select>
-            </div>
-            <button 
-              onClick={draftTestSpec}
-              disabled={isDraftingSpec}
-              className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isDraftingSpec ? <Loader2 className="w-5 h-5 animate-spin" /> : <ChevronRight className="w-5 h-5" />}
-              Draft Specification
-            </button>
-          </div>
-
-          {specResult && (
-            <div className="mt-8 bg-slate-800 border border-slate-700 p-6 rounded-2xl animate-in zoom-in-95 duration-300">
-              <h3 className="text-blue-400 font-bold mb-3 flex items-center gap-2">
-                <FileText className="w-4 h-4" /> Suggested Blueprint:
-              </h3>
-              <div className="text-slate-300 text-sm whitespace-pre-wrap font-mono leading-relaxed">
-                {specResult}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Key Takeaways Section */}
-      <section className="max-w-6xl mx-auto mt-12 bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
-        <div className="flex items-center gap-3 mb-6">
-          <Zap className="text-yellow-500 w-8 h-8 fill-yellow-500" />
-          <h2 className="text-3xl font-bold text-slate-800">My Big Takeaways</h2>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <div className="bg-blue-50 p-3 rounded-2xl h-fit">
-                <Star className="text-blue-600 w-6 h-6 fill-blue-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">Balance is Key</h3>
-                <p className="text-slate-600">Don't just measure learning (Summative); use assessment to <i>drive</i> learning (Formative). Integrating teaching and testing creates a cohesive classroom experience.</p>
-              </div>
-            </div>
-            
-            <div className="flex gap-4">
-              <div className="bg-green-50 p-3 rounded-2xl h-fit">
-                <CheckCircle className="text-green-600 w-6 h-6 fill-green-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">Practical Reliability</h3>
-                <p className="text-slate-600">To make a test reliable: use clear instructions, provide uniform conditions, and use objective scoring keys. No ambiguity allowed!</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-900 rounded-2xl p-6 text-white flex flex-col justify-center">
-            <p className="text-xl italic font-serif leading-relaxed mb-4">
-              "Assessment should be a bridge, not a barrier. It's about empowering students to see their own progress through clear feedback."
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold">ES</div>
-              <div>
-                <p className="font-bold">ELT Student</p>
-                <p className="text-slate-400 text-sm font-medium">TEDU ELT 4th Year</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="text-center mt-12 pb-8">
-        <p className="text-slate-400 text-sm">
-          ELT 403 Assignment • Created with academic rigor and a touch of creativity
-        </p>
-      </footer>
+      <div className="floor"></div>
     </div>
   );
 };
