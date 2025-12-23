@@ -27,11 +27,12 @@ const App = () => {
   const [isDraftingSpec, setIsDraftingSpec] = useState(false);
   const [specResult, setSpecResult] = useState('');
   
+  // NEW STATES FOR TEST GENERATOR
   const [testObjective, setTestObjective] = useState('');
   const [fullTestResult, setFullTestResult] = useState('');
   const [isGeneratingTest, setIsGeneratingTest] = useState(false);
 
-
+  // Note: Using the key from your .env snippet
   const apiKey = "AIzaSyAj1stHQe-NrBefFKO-r3txW13YICi6GWk"; 
 
   const sections = [
@@ -170,6 +171,7 @@ const App = () => {
     }
   };
 
+  // NEW: GENERATE FULL TEST CONTENT
   const generateFullTest = async () => {
     if (!testObjective) return alert("Please enter a learning objective!");
     setIsGeneratingTest(true);
@@ -221,7 +223,7 @@ const App = () => {
           )}
         </div>
 
-        
+        {/* CARDS GRID */}
         <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sections.map((section) => (
             <div 
@@ -255,7 +257,7 @@ const App = () => {
           ))}
         </main>
 
-      
+        {/* NEW COMBINED AI ASSESSMENT LAB */}
         <section className="max-w-6xl mx-auto mt-12 bg-slate-900 rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden border border-slate-700">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <BrainCircuit className="w-48 h-48" />
@@ -358,7 +360,7 @@ const App = () => {
           </div>
         </section>
 
-       
+        {/* TAKEAWAYS SECTION */}
         <section className="max-w-6xl mx-auto mt-12 bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-6">
             <Zap className="text-yellow-500 w-8 h-8 fill-yellow-500" />
@@ -402,7 +404,7 @@ const App = () => {
 
         <footer className="text-center mt-12 pb-8">
           <p className="text-slate-400 text-sm">
-            ELT 403 Assignment • Created with academic rigor and a touch of creativity
+            ELT 403 Assignment • Created with a touch of creativity
           </p>
         </footer>
       </div>
