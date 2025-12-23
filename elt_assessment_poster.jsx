@@ -13,9 +13,9 @@ import {
   Sparkles,
   Loader2,
   ChevronRight,
-  BrainCircuit
+  BrainCircuit,
+  ClipboardCheck
 } from 'lucide-react';
-
 
 import BlobCursor from './BlobCursor';
 
@@ -26,8 +26,13 @@ const App = () => {
   const [testSpecPrompt, setTestSpecPrompt] = useState({ skill: 'Writing', level: 'Intermediate' });
   const [isDraftingSpec, setIsDraftingSpec] = useState(false);
   const [specResult, setSpecResult] = useState('');
+  
+  const [testObjective, setTestObjective] = useState('');
+  const [fullTestResult, setFullTestResult] = useState('');
+  const [isGeneratingTest, setIsGeneratingTest] = useState(false);
 
-  const apiKey = ""; 
+
+  const apiKey = "AIzaSyAj1stHQe-NrBefFKO-r3txW13YICi6GWk"; 
 
   const sections = [
     {
@@ -108,7 +113,7 @@ const App = () => {
   ];
 
   const callGemini = async (prompt, systemInstruction) => {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
       systemInstruction: { parts: [{ text: systemInstruction }] }
@@ -143,7 +148,7 @@ const App = () => {
       );
       setAiSummary(result);
     } catch (error) {
-      setAiSummary("Oops! I couldn't generate a summary right now. Please try again later.");
+      setAiSummary("Oops! I couldn't generate a summary right now.");
     } finally {
       setIsGeneratingSummary(false);
     }
@@ -159,34 +164,47 @@ const App = () => {
       );
       setSpecResult(result);
     } catch (error) {
-      setSpecResult("Error drafting specification. Please check your connection.");
+      setSpecResult("Error drafting specification.");
     } finally {
       setIsDraftingSpec(false);
     }
   };
 
-  return (
-   
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans relative overflow-x-hidden">
+  const generateFullTest = async () => {
+    if (!testObjective) return alert("Please enter a learning objective!");
+    setIsGeneratingTest(true);
+    try {
+      const prompt = `Create a draft ELT test for ${testSpecPrompt.skill} at ${testSpecPrompt.level} level. 
+      Learning Objective: ${testObjective}. 
+      Include: 1. Instructions, 2. 3-5 Questions, 3. Answer Key.`;
       
-      
-      <BlobCursor 
-        fillColor="#6B8E8E" 
-        trailCount={4} 
-        zIndex={0} 
-      />
+      const result = await callGemini(
+        prompt,
+        "You are an expert ELT teacher. Create a high-quality test draft based on the objective."
+      );
+      setFullTestResult(result);
+    } catch (error) {
+      setFullTestResult("Error generating test content.");
+    } finally {
+      setIsGeneratingTest(false);
+    }
+  };
 
-      {/* Wrap everything else in a relative div with higher z-index */}
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans relative overflow-x-hidden">
+      <BlobCursor fillColor="#6B8E8E" trailCount={4} zIndex={0} />
+
       <div className="relative z-10">
         <header className="max-w-6xl mx-auto text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight">
             ELT 403: <span className="text-blue-600">Assessment & Evaluation</span>
           </h1>
-          <p className="text-xl text-slate-600 font-medium">
-            A Visual Poster for ELT 403, 22.12.2025
+          <p className="text-xl text-slate-600 font-medium font-serif italic">
+            A Visual Poster by KINCAK, TEDU ELT 4th Year
           </p>
         </header>
 
+        {/* SUMMARY SECTION */}
         <div className="max-w-6xl mx-auto mb-10 flex flex-col items-center">
           <button 
             onClick={generateSummary}
@@ -203,6 +221,7 @@ const App = () => {
           )}
         </div>
 
+        
         <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sections.map((section) => (
             <div 
@@ -236,7 +255,8 @@ const App = () => {
           ))}
         </main>
 
-        <section className="max-w-6xl mx-auto mt-12 bg-slate-900 rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden">
+      
+        <section className="max-w-6xl mx-auto mt-12 bg-slate-900 rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden border border-slate-700">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <BrainCircuit className="w-48 h-48" />
           </div>
@@ -244,15 +264,16 @@ const App = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
               <Sparkles className="text-blue-400 w-8 h-8" />
-              <h2 className="text-3xl font-bold">✨ Test Spec Draftsman</h2>
+              <h2 className="text-3xl font-bold tracking-tight">AI Assessment Lab</h2>
             </div>
+            
             <p className="text-slate-400 mb-8 max-w-xl">
-              Struggling with the Week 5 task? Select a skill and level, and Gemini will help you draft the initial specifications for your test design.
+              Select your parameters and enter a specific learning objective to draft professional test specifications and items.
             </p>
 
-            <div className="grid md:grid-cols-3 gap-6 items-end">
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div>
-                <label className="block text-sm font-semibold text-slate-400 mb-2">Skill</label>
+                <label className="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Skill</label>
                 <select 
                   value={testSpecPrompt.skill}
                   onChange={(e) => setTestSpecPrompt({...testSpecPrompt, skill: e.target.value})}
@@ -266,7 +287,7 @@ const App = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-400 mb-2">Learner Level</label>
+                <label className="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Level</label>
                 <select 
                   value={testSpecPrompt.level}
                   onChange={(e) => setTestSpecPrompt({...testSpecPrompt, level: e.target.value})}
@@ -278,35 +299,71 @@ const App = () => {
                   <option>Young Learners</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Learning Objective</label>
+                <input 
+                  type="text"
+                  placeholder="e.g. Identifying main ideas in news"
+                  value={testObjective}
+                  onChange={(e) => setTestObjective(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-4 mb-8">
               <button 
                 onClick={draftTestSpec}
                 disabled={isDraftingSpec}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 min-w-[200px] bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isDraftingSpec ? <Loader2 className="w-5 h-5 animate-spin" /> : <ChevronRight className="w-5 h-5" />}
-                Draft Specification
+                {isDraftingSpec ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5" />}
+                1. Draft Spec Blueprint
+              </button>
+              <button 
+                onClick={generateFullTest}
+                disabled={isGeneratingTest}
+                className="flex-1 min-w-[200px] bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 disabled:opacity-50"
+              >
+                {isGeneratingTest ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                2. Generate Test Draft
               </button>
             </div>
 
-            {specResult && (
-              <div className="mt-8 bg-slate-800 border border-slate-700 p-6 rounded-2xl animate-in zoom-in-95 duration-300">
-                <h3 className="text-blue-400 font-bold mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4" /> Suggested Blueprint:
-                </h3>
-                <div className="text-slate-300 text-sm whitespace-pre-wrap font-mono leading-relaxed">
-                  {specResult}
-                </div>
+            {/* RESULTS VIEW */}
+            {(specResult || fullTestResult) && (
+              <div className="grid md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
+                {specResult && (
+                  <div className="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl">
+                    <h3 className="text-blue-400 font-bold mb-4 flex items-center gap-2 text-xs uppercase tracking-widest border-b border-slate-700 pb-2">
+                      <ClipboardCheck className="w-4 h-4" /> Specification Result
+                    </h3>
+                    <div className="text-slate-300 text-sm whitespace-pre-wrap font-mono leading-relaxed max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+                      {specResult}
+                    </div>
+                  </div>
+                )}
+                {fullTestResult && (
+                  <div className="bg-white p-6 rounded-2xl shadow-xl">
+                    <h3 className="text-slate-900 font-bold mb-4 flex items-center gap-2 text-xs uppercase tracking-widest border-b border-slate-100 pb-2">
+                      <Sparkles className="w-4 h-4 text-blue-600" /> Draft Test Content
+                    </h3>
+                    <div className="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+                      {fullTestResult}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </section>
 
+       
         <section className="max-w-6xl mx-auto mt-12 bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-6">
             <Zap className="text-yellow-500 w-8 h-8 fill-yellow-500" />
             <h2 className="text-3xl font-bold text-slate-800">My Big Takeaways</h2>
           </div>
-          
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="flex gap-4">
@@ -318,7 +375,6 @@ const App = () => {
                   <p className="text-slate-600">Don't just measure learning (Summative); use assessment to <i>drive</i> learning (Formative). Integrating teaching and testing creates a cohesive classroom experience.</p>
                 </div>
               </div>
-              
               <div className="flex gap-4">
                 <div className="bg-green-50 p-3 rounded-2xl h-fit">
                   <CheckCircle className="text-green-600 w-6 h-6 fill-green-600" />
@@ -329,13 +385,12 @@ const App = () => {
                 </div>
               </div>
             </div>
-
             <div className="bg-slate-900 rounded-2xl p-6 text-white flex flex-col justify-center">
               <p className="text-xl italic font-serif leading-relaxed mb-4">
                 "Assessment should be a bridge, not a barrier. It's about empowering students to see their own progress through clear feedback."
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold">ES</div>
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold">KS</div>
                 <div>
                   <p className="font-bold">KINCAK</p>
                   <p className="text-slate-400 text-sm font-medium">TEDU ELT 4th Year</p>
@@ -347,7 +402,7 @@ const App = () => {
 
         <footer className="text-center mt-12 pb-8">
           <p className="text-slate-400 text-sm">
-            ELT 403 Assignment • Created with a touch of creativity
+            ELT 403 Assignment • Created with academic rigor and a touch of creativity
           </p>
         </footer>
       </div>
