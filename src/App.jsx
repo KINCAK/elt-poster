@@ -25,7 +25,7 @@ const App = () => {
       title: "2. The Pillars", 
       sub: "Validity & Reliability", 
       icon: "⚖️", 
-      text: "In our speaking test design, we learned that using two examiners—a silent assessor and an interlocutor—is a critical reliability strategy to keep the scoring objective and fair for every student.",
+      text: "In our speaking test design, we learned that using two examiners, a silent assessor and an interlocutor, is a critical reliability strategy to keep the scoring objective and fair for every student.",
       file: files.speaking
     },
     { 
@@ -49,7 +49,7 @@ const App = () => {
       title: "5. The Blueprint", 
       sub: "Test Specifications", 
       icon: "📝", 
-      text: "Developing 'The Architecture of Joy' reading test taught us to target specific sub-skills like skimming for main ideas and careful reading for detail to ensure high construct validity.",
+      text: Looking at reading tests taught us to target specific sub-skills like skimming for main ideas and careful reading for detail to ensure high construct validity.",
       file: files.reading
     },
     { 
@@ -70,8 +70,7 @@ const App = () => {
         <div className="absolute bottom-40 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[150px]"></div>
       </div>
 
-      {/* THE PLAYER (YOU, ZEYNEP) */}
-      <div className="player-character">
+*      <div className="player-character">
         <div className="flex flex-col items-center">
           <div className="text-7xl drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]">👩‍🎓</div>
           <div className="mt-4 bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-lg border border-blue-400">
