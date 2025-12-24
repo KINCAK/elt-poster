@@ -124,7 +124,7 @@ const App = () => {
               >
                 View Summary
               </button>
-            </div>
+            </div>np
 
             {generatedDraft && (
               <div className="bg-blue-900/30 p-8 rounded-3xl border border-blue-500/30 text-left">
@@ -145,8 +145,7 @@ const App = () => {
           </div>
         </section>
 
-        {/* FINAL CREDITS */}
-        <section className="w-[100vw] h-full flex items-center justify-center shrink-0">
+,        <section className="w-[100vw] h-full flex items-center justify-center shrink-0">
           <div className="text-center">
             <h2 className="text-6xl font-serif text-white mb-4">The End.</h2>
             <div className="h-1 w-24 bg-blue-600 mx-auto mb-8"></div>
