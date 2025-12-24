@@ -1,160 +1,182 @@
 import React, { useState } from 'react';
+import { 
+  BookOpen, CheckCircle, RefreshCw, Target, Users, MessageSquare, 
+  Zap, FileText, Star, Info, Sparkles, BrainCircuit, ClipboardCheck 
+} from 'lucide-react';
+import StarBackground from './StarBackground'; 
 
 const App = () => {
-  const [skill, setSkill] = useState('Writing');
-  const [generatedDraft, setGeneratedDraft] = useState(null);
-
-  // Links to your actual assignments in the 'public' folder
-  const files = {
-    grammar: "/VocabngrammarZEYNEPKINCAK.docx",
-    reading: "/KINCAKREADINGTEST (1).docx",
-    speaking: "/speaking test elt403.docx"
-  };
+  const [activeSection, setActiveSection] = useState(null);
 
   const sections = [
     { 
-      id: 1, 
-      title: "1. The Foundation", 
-      sub: "Assessment vs. Testing", 
-      icon: "📖", 
-      text: "Testing is just a snapshot, but assessment is the journey. Our SAT analysis showed us that multiple-choice questions often only check if we recognize language traits, not if we can actually use them to communicate.",
-      file: files.grammar
+      id: 'foundation', 
+      title: '1. The Foundation', 
+      icon: <BookOpen className="w-6 h-6" />, 
+      color: 'bg-[#6c269e]', // Changed from bg-blue-500
+      content: 'Assessment vs. Testing', 
+      details: [
+        'Testing: Formal, standardized snapshots (TOEFL, IELTS) used for high-stakes decisions.', 
+        'Assessment: The broad umbrella including classroom tasks, observations, and portfolios.', 
+        'Summative (AoL): Measuring achievement at the end of a unit to provide a final grade.', 
+        'Formative (AfL): Ongoing support used to guide future learning and provide immediate feedback.'
+      ] 
     },
     { 
-      id: 2, 
-      title: "2. The Pillars", 
-      sub: "Validity & Reliability", 
-      icon: "⚖️", 
-      text: "In our speaking test design, we learned that using two examiners, a silent assessor and an interlocutor, is a critical reliability strategy to keep the scoring objective and fair for every student.",
-      file: files.speaking
+      id: 'pillars', 
+      title: '2. The Pillars', 
+      icon: <Target className="w-6 h-6" />, 
+      color: 'bg-green-500', 
+      content: 'Validity & Reliability', 
+      details: [
+        'Validity: Does the test measure what it claims to? (Content, Construct, and Face validity).', 
+        'Reliability: Is the scoring consistent across different raters and time periods?', 
+        'Practicality: Is the test stay within budget, time, and resource constraints?', 
+        'Rule: A test can be reliable without being valid, but it cannot be valid without being reliable.'
+      ] 
     },
     { 
-      id: 3, 
-      title: "3. The Heart", 
-      sub: "Feedback & Interaction", 
-      icon: "💬", 
-      text: "Interaction is key. we chose a paired administration format for our speaking test because it allows for a more authentic assessment of interactional skills compared to a standard one-on-one interview.",
-      file: files.speaking
+      id: 'feedback', 
+      title: '3. The Heart', 
+      icon: <MessageSquare className="w-6 h-6" />, 
+      color: 'bg-purple-500', 
+      content: 'The 3 Fs & 5 Cs', 
+      details: [
+        'Feed Up: Clarifying goals (Where am I going?).', 
+        'Feedback: Current performance data (How am I doing?).', 
+        'Feed Forward: Actionable next steps (Where to next?).', 
+        'The 5 Cs: Feedback must be Clear, Coherent, Collaborative, Communicative, and Caring.'
+      ] 
     },
     { 
-      id: 4, 
-      title: "4. The Impact", 
-      sub: "The Backwash Effect", 
-      icon: "🔄", 
-      text: "The Backwash Effect is huge. If we only test recognition, students might focus on rote memorization. We need tasks that push them to actually produce language in real-world contexts.",
-      file: files.grammar
+      id: 'washback', 
+      title: '4. The Impact', 
+      icon: <RefreshCw className="w-6 h-6" />, 
+      color: 'bg-orange-500', 
+      content: 'Washback Effect', 
+      details: [
+        'Positive Washback: When testing motivates meaningful practice and better teaching methods.', 
+        'Negative Washback: "Teaching to the test" where the curriculum narrows to only cover exam items.', 
+        'Impact: The effect of a test on the individual, the classroom, and society at large.',
+        'Alignment: Ensuring that what we teach matches what we assess.'
+      ] 
     },
     { 
-      id: 5, 
-      title: "5. The Blueprint", 
-      sub: "Test Specifications", 
-      icon: "📝", 
-      // FIXED: Added missing opening quotation mark below
-      text: "Looking at reading tests taught us to target specific sub-skills like skimming for main ideas and careful reading for detail to ensure high construct validity.",
-      file: files.reading
+      id: 'specs', 
+      title: '5. The Blueprint', 
+      icon: <FileText className="w-6 h-6" />, 
+      color: 'bg-red-500', 
+      content: 'Test Specifications', 
+      details: [
+        'Design: Defining the purpose, target audience, and specific language skills to be tested.', 
+        'Item Writing: Creating clear, non-ambiguous questions that match the difficulty level.', 
+        'Scoring Rubrics: Developing objective criteria (Analytic vs. Holistic) for consistent grading.', 
+        'Piloting: Testing the items on a small group before the final administration.'
+      ] 
     },
     { 
-      id: 6, 
-      title: "6. Young Learners", 
-      sub: "Functional Assessment", 
-      icon: "🎨", 
-      text: "For younger learners, it's about what they CAN do. We believe adding timed write-ups or short fill-in-the-blanks helps align our tests with how we actually use language in modern life.",
-      file: files.grammar
+      id: 'yl', 
+      title: '6. Young Learners', 
+      icon: <Users className="w-6 h-6" />, 
+      color: 'bg-teal-500', 
+      content: 'Assessing Kids', 
+      details: [
+        'Scaffolding: Using visuals, movement (TPR), and realia to make tasks concrete.', 
+        'Low Affective Filter: Reducing anxiety to allow students to demonstrate true ability.', 
+        'Observation: Using non-intrusive methods to assess progress during natural play/tasks.', 
+        'Encouragement: Focusing on "Can-Do" statements rather than pointing out errors.'
+      ] 
     }
   ];
 
   return (
-    <div className="world-container">
-      {/* GLOWING BACKGROUND ELEMENTS */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-20 left-1/4 w-64 h-64 bg-blue-500 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-40 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[150px]"></div>
-      </div>
+    <div className="min-h-screen p-6 md:p-12 font-sans relative overflow-x-hidden text-white">
+      {/* Background Layers */}
+      <StarBackground />
+      
+      <div className="relative z-10 max-w-7xl mx-auto">
+<header className="text-center mb-16">
+  <div className="inline-block bg-[#6c269e]/10 text-[#6c269e] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 border border-[#6c269e]/20">
+    TEDU ELT 403 Assignment
+  </div>
+  
+  {/* KEYBOARD ANIMATED TITLE */}
+  <h1 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tighter cursor-default">
+    <div className="inline-block mr-4">
+      {"LANGUAGE".split("").map((char, i) => (
+        <span key={`l-${i}`} className="key inline-block">{char}</span>
+      ))}
+    </div>
+    <div className="inline-block text-[#6c269e]">
+      {"ASSESSMENT".split("").map((char, i) => (
+        <span key={`a-${i}`} className="key inline-block">{char}</span>
+      ))}
+    </div>
+  </h1>
 
-      {/* FIXED: Removed the extra '*' that was here */}
-      <div className="player-character">
-        <div className="flex flex-col items-center">
-          <div className="text-7xl drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]">👩‍🎓</div>
-          <div className="mt-4 bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase shadow-lg border border-blue-400">
-            Zeynep Kınçak
-          </div>
-        </div>
-      </div>
+  <p className="text-xl text-slate-400 font-medium italic max-w-2xl mx-auto">
+    A comprehensive visual poster.
+  </p>
+  <div className="w-24 h-1 bg-[#6c269e] mx-auto mt-8 rounded-full shadow-[0_0_15px_rgba(108,38,158,0.5)]"></div>
+</header>
 
-      {/* HORIZONTAL STORY PATH */}
-      <div className="flex items-center h-full">
-        {sections.map((s) => (
-          <section key={s.id} className="storybox w-[100vw] h-full flex items-center justify-center shrink-0 px-8">
-            <div className="storybox-card bg-white/10 backdrop-blur-md p-10 rounded-[50px] border border-white/20 shadow-2xl max-w-xl text-center">
-              <span className="text-6xl mb-6 block drop-shadow-md">{s.icon}</span>
-              <h2 className="text-4xl font-bold text-white mb-2 font-serif">{s.title}</h2>
-              <p className="text-blue-400 font-bold text-sm uppercase tracking-widest mb-6">{s.sub}</p>
-              <p className="text-slate-200 text-lg italic leading-relaxed mb-8">"{s.text}"</p>
-              
-              <a 
-                href={s.file} 
-                download 
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full font-bold text-sm transition-all transform active:scale-95 shadow-lg shadow-blue-500/20"
-              >
-                📂 Open Project File
-              </a>
-            </div>
-          </section>
+<main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  {sections.map((s, index) => (
+    <div 
+      key={s.id} 
+      className="poster-card bg-slate-800/40 backdrop-blur-md p-8 rounded-[2rem] shadow-xl border border-white/10 transition-all duration-500 animate-float"
+      style={{ 
+        // Staggers the start of the animation for each card
+        animationDelay: `${index * 0.2}s` 
+      }}
+    >
+      <div className={`${s.color} w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg transform -rotate-3`}>
+        {s.icon}
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">{s.title}</h2>
+      
+      {/* Updated to your requested purple color #6c269e */}
+      <p className="text-[#6c269e] font-bold uppercase text-xs tracking-widest mb-6">
+        {s.content}
+      </p>
+      
+      <ul className="space-y-4">
+        {s.details.map((detail, i) => (
+          <li key={i} className="flex gap-3 items-start group">
+            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#6c269e]/50 group-hover:bg-[#6c269e] transition-colors"></div>
+            <p className="text-slate-300 text-sm leading-relaxed">{detail}</p>
+          </li>
         ))}
+      </ul>
+    </div>
+  ))}
+</main>
 
-        {/* TEST DESIGN TERMINAL */}
-        <section className="storybox w-[150vw] h-full flex items-center justify-center shrink-0 px-8">
-          <div className="storybox-card bg-slate-900/80 backdrop-blur-xl p-12 rounded-[60px] border-2 border-blue-500/50 shadow-2xl max-w-3xl w-full text-white">
-            <h2 className="text-4xl font-bold mb-4 font-serif text-blue-400">Test Design Terminal</h2>
-            <p className="text-slate-400 mb-8 text-lg">Input your parameters to finalize your draft.</p>
-            
-            <div className="flex flex-col md:flex-row gap-4 mb-10">
-              <select 
-                value={skill} 
-                onChange={(e) => setSkill(e.target.value)}
-                className="bg-slate-800 border border-slate-700 rounded-2xl px-6 py-4 flex-grow text-lg outline-none focus:ring-2 focus:ring-blue-500 text-white"
-              >
-                <option value="Writing">Skill: Writing (SAT Critique)</option>
-                <option value="Reading">Skill: Reading (Architecture of Joy)</option>
-                <option value="Speaking">Skill: Speaking (B2 Paired Test)</option>
-              </select>
-              <button 
-                onClick={() => setGeneratedDraft(skill)}
-                className="bg-blue-600 hover:bg-blue-500 px-10 py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95"
-              >
-                View Summary
-              </button>
-            </div>np
-
-            {generatedDraft && (
-              <div className="bg-blue-900/30 p-8 rounded-3xl border border-blue-500/30 text-left">
-                <p className="text-blue-200 font-mono text-xl mb-4 uppercase font-bold tracking-widest">System Output:</p>
-                <div className="text-slate-300 space-y-2 text-sm">
-                  {generatedDraft === 'Writing' && (
-                    <p>Focuses on transitioning from recognition to production to avoid negative backwash. Prioritizes timed write-ups over simple multiple-choice.</p>
-                  )}
-                  {generatedDraft === 'Reading' && (
-                    <p>B2/C1 target using 'The Architecture of Joy.' Tests skimming for main ideas and careful reading for explicit facts and inferences.</p>
-                  )}
-                  {generatedDraft === 'Speaking' && (
-                    <p>Paired administration format for authentic interaction. Employs analytical rubrics for grammar, discourse, and pronunciation.</p>
-                  )}
-                </div>
+        <section className="mt-20 p-10 bg-white/5 backdrop-blur-lg rounded-[3rem] text-white relative overflow-hidden shadow-2xl border border-white/10">
+          <div className="absolute top-0 right-0 p-12 opacity-5">
+            <BrainCircuit className="w-40 h-40" />
+          </div>
+          <div className="relative z-10 max-w-3xl">
+            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <Star className="text-yellow-400 fill-yellow-400" /> Final Takeaway
+            </h2>
+            <p className="text-xl font-serif italic text-slate-200 leading-relaxed">
+              "Assessment should be a bridge to learning, not a barrier to it. By balancing reliability with care and validity with practicality, we empower our students to see their own growth."
+            </p>
+            <div className="mt-8 flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#6c269e] rounded-full flex items-center justify-center font-black">ZK</div>
+              <div>
+                <p className="font-bold text-lg">Zeynep Kınçak</p>
+                <p className="text-slate-400 text-sm uppercase tracking-widest">TED University • ELT 2025</p>
               </div>
-            )}
+            </div>
           </div>
         </section>
 
-,        <section className="w-[100vw] h-full flex items-center justify-center shrink-0">
-          <div className="text-center">
-            <h2 className="text-6xl font-serif text-white mb-4">The End.</h2>
-            <div className="h-1 w-24 bg-blue-600 mx-auto mb-8"></div>
-            <p className="text-blue-400 font-bold tracking-[0.3em] uppercase">Made by Zeynep Kınçak</p>
-          </div>
-        </section>
+        <footer className="text-center mt-20 pb-10 border-t border-white/10 pt-10 text-slate-500 text-xs">
+          kairakincak.com • Interactive Educational Poster Concept
+        </footer>
       </div>
-
-      <div className="floor"></div>
     </div>
   );
 };
